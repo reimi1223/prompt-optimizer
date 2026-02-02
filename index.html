@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>社群营销 Prompt 优化器</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.3);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(16, 185, 129, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Lucide Icons 组件
+        const Sparkles = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+            </svg>
+        );
+
+        const Copy = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+        );
+
+        const Download = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+        );
+
+        const AlertCircle = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        );
+
+        const CheckCircle2 = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        );
+
+        const Loader2 = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+        );
+
+        const Users = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+        );
+
+        const TrendingUp = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+        );
+
+        const Target = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+                <circle cx="12" cy="12" r="6" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+                <circle cx="12" cy="12" r="2" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+            </svg>
+        );
+
+        function CommunityPromptOptimizer() {
+            const [userInput, setUserInput] = useState('');
+            const [isOptimizing, setIsOptimizing] = useState(false);
+            const [optimizedPrompt, setOptimizedPrompt] = useState('');
+            const [missingInfo, setMissingInfo] = useState([]);
+            const [copied, setCopied] = useState(false);
+
+            const optimizePrompt = async () => {
+                if (!userInput.trim()) return;
+                
+                setIsOptimizing(true);
+                setOptimizedPrompt('');
+                setMissingInfo([]);
+
+                const systemPrompt = `# Role 
+你是一位顶级 Prompt Engineer，专精于品牌营销、社交媒体策略和社群运营领域。你的任务是将社群负责人的模糊需求，转化为像"游戏行业周报模板"一样高标准、结构化、可直接执行的系统级 Prompt。
+
+# 工作流（Strict Logic）
+1. **分析意图**：识别用户需求中的核心角色、任务和目标，特别关注品牌定位、受众画像、社交媒体平台特性。
+2. **结构映射**：将需求填入以下标准框架：
+   - \`# 角色\`：明确 AI 扮演的专业角色（品牌策略师/社群运营专家/内容创作者等）
+   - \`# 任务\`：清晰定义要完成的具体任务
+   - \`# 核心参数\`：列出品牌、平台、受众、时间范围等关键信息
+   - \`# 约束条件（优先级）\`：使用"必须"、"严禁"、"最高优先级"等强化词汇
+   - \`# 结构要求\`：定义输出的格式和组织方式
+   - \`# 交付要求\`：明确最终交付物的形式
+   - \`# 品牌一致性\`：确保输出符合品牌调性和价值观
+   - \`# 成功指标\`：定义如何衡量成果（KPI、参与度、转化率等）
+
+3. **缺失补全引导**：（核心规则）
+   - 严禁擅自为用户编造具体的业务背景（如特定品牌调性、目标受众特征、平台选择）
+   - 必须指出哪些关键信息需要用户补充，特别是：
+     * 品牌定位和调性（正式/轻松/专业/有趣等）
+     * 目标受众画像（年龄、兴趣、痛点、行为习惯）
+     * 社交媒体平台（小红书/微信/抖音/Instagram 等）
+     * 内容目标（品牌认知/社群活跃/销售转化/用户留存等）
+     * 时间周期和频率
+
+4. **输出结果**：先输出优化后的 Prompt 框架，然后列出《补完清单》。
+
+# 优化原则
+* **不可添加额外信息**：如果用户没提到具体平台，严禁在优化后的 Prompt 中随意添加"小红书"或"抖音"。
+* **强化约束力**：使用"严禁"、"必须"、"最高优先级"、"不得"等词汇强化指令执行力。
+* **模块化**：使用 Markdown 标题和检查清单（Checklist）增加可读性。
+* **品牌导向**：所有输出必须考虑品牌一致性和长期战略价值。
+* **数据驱动**：在可能的情况下，要求包含可衡量的指标和 KPI。
+* **社群思维**：强调用户参与、互动和社群价值，而非单向传播。
+
+# 输出格式（必须严格遵守）
+请以JSON格式输出，包含两个字段：
+
+{
+  "optimized_prompt": "优化后的完整 Prompt 文本（使用 Markdown 格式）",
+  "missing_info": [
+    "缺失信息1：需要明确品牌调性（例如：专业严肃/年轻活泼/高端奢华）",
+    "缺失信息2：需要定义目标受众（例如：25-35岁职场女性，关注个人成长）",
+    "缺失信息3：...",
+    "..."
+  ]
+}
+
+现在，请根据社群负责人的需求进行优化：
+
+用户需求：${userInput}`;
+
+                try {
+                    const response = await fetch("https://api.anthropic.com/v1/messages", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            model: "claude-sonnet-4-20250514",
+                            max_tokens: 5000,
+                            messages: [
+                                {
+                                    role: "user",
+                                    content: systemPrompt
+                                }
+                            ],
+                        })
+                    });
+
+                    const data = await response.json();
+                    const responseText = data.content
+                        .filter(item => item.type === "text")
+                        .map(item => item.text)
+                        .join("\n");
+
+                    let jsonMatch = responseText.match(/\{[\s\S]*"optimized_prompt"[\s\S]*"missing_info"[\s\S]*\}/);
+                    
+                    if (jsonMatch) {
+                        const result = JSON.parse(jsonMatch[0]);
+                        setOptimizedPrompt(result.optimized_prompt);
+                        setMissingInfo(result.missing_info || []);
+                    } else {
+                        const cleanText = responseText.replace(/```json|```/g, "").trim();
+                        try {
+                            const result = JSON.parse(cleanText);
+                            setOptimizedPrompt(result.optimized_prompt);
+                            setMissingInfo(result.missing_info || []);
+                        } catch {
+                            setOptimizedPrompt(responseText);
+                            setMissingInfo(["请检查AI返回的格式"]);
+                        }
+                    }
+                } catch (error) {
+                    console.error("优化失败:", error);
+                    setOptimizedPrompt("⚠️ 优化过程中出现错误，请重试。");
+                } finally {
+                    setIsOptimizing(false);
+                }
+            };
+
+            const copyToClipboard = () => {
+                navigator.clipboard.writeText(optimizedPrompt);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            };
+
+            const downloadPrompt = () => {
+                const element = document.createElement("a");
+                const file = new Blob([optimizedPrompt], { type: 'text/plain' });
+                element.href = URL.createObjectURL(file);
+                element.download = "community_prompt_optimized.txt";
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
+            };
+
+            const templates = [
+                {
+                    icon: Users,
+                    title: "社群活动策划",
+                    example: "帮我策划一场线上社群活动，提升成员活跃度"
+                },
+                {
+                    icon: TrendingUp,
+                    title: "内容营销策略",
+                    example: "制定一个月的社交媒体内容日历，提升品牌认知度"
+                },
+                {
+                    icon: Target,
+                    title: "用户增长方案",
+                    example: "设计一个拉新活动方案，目标是增加1000个精准用户"
+                }
+            ];
+
+            const fillTemplate = (example) => {
+                setUserInput(example);
+            };
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-emerald-950 via-teal-950 to-cyan-950 p-6">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="text-center mb-12 pt-8">
+                            <div className="inline-flex items-center gap-3 mb-4 bg-emerald-500/10 px-6 py-3 rounded-full border border-emerald-500/30 backdrop-blur-sm">
+                                <Users className="w-6 h-6 text-emerald-400" />
+                                <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-300 via-teal-300 to-cyan-300 bg-clip-text text-transparent">
+                                    社群营销 Prompt 优化器
+                                </h1>
+                            </div>
+                            <p className="text-slate-300 text-lg max-w-2xl mx-auto mb-2">
+                                专为社群负责人打造 · 聚焦品牌营销与社交媒体策略
+                            </p>
+                        </div>
+
+                        <div className="mb-8 bg-slate-900/30 backdrop-blur-sm rounded-2xl border border-slate-800 p-6">
+                            <h3 className="text-sm font-semibold text-emerald-300 mb-4 flex items-center gap-2">
+                                <Sparkles className="w-4 h-4" />
+                                快速开始 - 点击模板自动填充
+                            </h3>
+                            <div className="grid md:grid-cols-3 gap-4">
+                                {templates.map((template, index) => {
+                                    const Icon = template.icon;
+                                    return (
+                                        <button
+                                            key={index}
+                                            onClick={() => fillTemplate(template.example)}
+                                            className="text-left p-4 bg-slate-900/50 hover:bg-slate-800/50 rounded-xl border border-slate-700 hover:border-emerald-500/50 transition-all group"
+                                        >
+                                            <Icon className="w-8 h-8 text-emerald-400 mb-2 group-hover:scale-110 transition-transform" />
+                                            <h4 className="font-semibold text-slate-200 mb-1">{template.title}</h4>
+                                            <p className="text-xs text-slate-400">{template.example}</p>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className="grid lg:grid-cols-2 gap-6">
+                            <div className="space-y-4">
+                                <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl border border-slate-800 p-6 shadow-2xl">
+                                    <label className="block text-sm font-semibold text-emerald-300 mb-3 flex items-center gap-2">
+                                        <Target className="w-4 h-4" />
+                                        描述你的营销需求
+                                    </label>
+                                    <textarea
+                                        value={userInput}
+                                        onChange={(e) => setUserInput(e.target.value)}
+                                        placeholder="例如：制定Q1季度的小红书内容策略，目标是提升品牌认知度和社群互动率"
+                                        className="w-full h-72 bg-slate-950/50 text-slate-200 rounded-xl border border-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none p-4 resize-none text-sm transition-all leading-relaxed"
+                                    />
+                                    
+                                    <button
+                                        onClick={optimizePrompt}
+                                        disabled={isOptimizing || !userInput.trim()}
+                                        className="mt-4 w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:from-slate-700 disabled:to-slate-700 text-white font-bold py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-emerald-500/50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    >
+                                        {isOptimizing ? (
+                                            <>
+                                                <Loader2 className="w-5 h-5 animate-spin" />
+                                                AI 正在为你优化策略...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Sparkles className="w-5 h-5" />
+                                                开始优化 Prompt
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+
+                                {missingInfo.length > 0 && (
+                                    <div className="bg-amber-950/30 backdrop-blur-sm rounded-2xl border border-amber-700/50 p-6 shadow-lg">
+                                        <div className="flex items-start gap-3 mb-4">
+                                            <AlertCircle className="w-6 h-6 text-amber-400 flex-shrink-0 mt-1" />
+                                            <div>
+                                                <h3 className="text-lg font-bold text-amber-300 mb-2">
+                                                    💡 建议补充的关键信息
+                                                </h3>
+                                                <p className="text-amber-200/80 text-sm mb-4">
+                                                    为了生成更精准的策略 Prompt，建议你补充以下信息：
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <ul className="space-y-3">
+                                            {missingInfo.map((info, index) => (
+                                                <li key={index} className="flex items-start gap-3 bg-amber-900/20 p-3 rounded-lg">
+                                                    <span className="text-amber-400 font-bold flex-shrink-0 mt-0.5">
+                                                        {index + 1}.
+                                                    </span>
+                                                    <span className="text-sm text-amber-100">{info}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl border border-slate-800 p-6 shadow-2xl">
+                                <div className="flex items-center justify-between mb-4">
+                                    <label className="text-sm font-semibold text-emerald-300 flex items-center gap-2">
+                                        <CheckCircle2 className="w-4 h-4" />
+                                        优化后的专业 Prompt
+                                    </label>
+                                    {optimizedPrompt && (
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={copyToClipboard}
+                                                className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors group relative"
+                                                title="复制到剪贴板"
+                                            >
+                                                {copied ? (
+                                                    <CheckCircle2 className="w-4 h-4 text-green-400" />
+                                                ) : (
+                                                    <Copy className="w-4 h-4 text-slate-400 group-hover:text-emerald-300" />
+                                                )}
+                                            </button>
+                                            <button
+                                                onClick={downloadPrompt}
+                                                className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors group"
+                                                title="下载为文本文件"
+                                            >
+                                                <Download className="w-4 h-4 text-slate-400 group-hover:text-emerald-300" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="bg-slate-950/50 rounded-xl border border-slate-700 p-6 h-[600px] overflow-y-auto custom-scrollbar">
+                                    {!optimizedPrompt && !isOptimizing && (
+                                        <div className="h-full flex items-center justify-center text-slate-600 text-center">
+                                            <div>
+                                                <TrendingUp className="w-16 h-16 mx-auto mb-4 opacity-20" />
+                                                <p className="text-slate-500 mb-2">优化后的 Prompt 将显示在这里</p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {isOptimizing && (
+                                        <div className="h-full flex items-center justify-center">
+                                            <div className="text-center">
+                                                <Loader2 className="w-12 h-12 text-emerald-400 animate-spin mx-auto mb-4" />
+                                                <p className="text-slate-400 mb-2">AI 正在分析你的需求...</p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {optimizedPrompt && (
+                                        <div className="prose prose-invert prose-sm max-w-none">
+                                            <pre className="whitespace-pre-wrap font-mono text-sm text-slate-300 leading-relaxed">
+                                                {optimizedPrompt}
+                                            </pre>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-12 bg-slate-900/30 backdrop-blur-sm rounded-2xl border border-slate-800 p-8">
+                            <h2 className="text-xl font-bold text-emerald-300 mb-6 flex items-center gap-2">
+                                <Sparkles className="w-6 h-6" />
+                                如何使用这个工具
+                            </h2>
+                            <div className="grid md:grid-cols-4 gap-6 text-slate-300">
+                                <div>
+                                    <div className="w-10 h-10 bg-emerald-600/20 rounded-lg flex items-center justify-center mb-3">
+                                        <span className="text-xl font-bold text-emerald-400">1</span>
+                                    </div>
+                                    <h3 className="font-semibold mb-2 text-emerald-200">描述需求</h3>
+                                    <p className="text-sm text-slate-400">
+                                        用自然语言描述你的营销任务
+                                    </p>
+                                </div>
+                                <div>
+                                    <div className="w-10 h-10 bg-teal-600/20 rounded-lg flex items-center justify-center mb-3">
+                                        <span className="text-xl font-bold text-teal-400">2</span>
+                                    </div>
+                                    <h3 className="font-semibold mb-2 text-teal-200">AI 优化</h3>
+                                    <p className="text-sm text-slate-400">
+                                        转化为结构化的专业 Prompt
+                                    </p>
+                                </div>
+                                <div>
+                                    <div className="w-10 h-10 bg-cyan-600/20 rounded-lg flex items-center justify-center mb-3">
+                                        <span className="text-xl font-bold text-cyan-400">3</span>
+                                    </div>
+                                    <h3 className="font-semibold mb-2 text-cyan-200">补充信息</h3>
+                                    <p className="text-sm text-slate-400">
+                                        根据建议补充关键信息
+                                    </p>
+                                </div>
+                                <div>
+                                    <div className="w-10 h-10 bg-emerald-600/20 rounded-lg flex items-center justify-center mb-3">
+                                        <span className="text-xl font-bold text-emerald-400">4</span>
+                                    </div>
+                                    <h3 className="font-semibold mb-2 text-emerald-200">直接使用</h3>
+                                    <p className="text-sm text-slate-400">
+                                        复制到其他 AI 工具使用
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<CommunityPromptOptimizer />, document.getElementById('root'));
+    </script>
+</body>
+</html>
